@@ -1,0 +1,196 @@
+{
+  "info": {
+    "name": "Gym Management API — Experiment 4",
+    "description": "REST API Design with MongoDB + Mongoose Integration. Base URL variable {{baseUrl}} defaults to http://localhost:5000.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "memberId", "value": "" },
+    { "key": "membershipId", "value": "" },
+    { "key": "trainerId", "value": "" },
+    { "key": "attendanceId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/health" }
+    },
+    {
+      "name": "Experiment 5 — Security & Validation Demo",
+      "item": [
+        {
+          "name": "Rejected — Missing Required Fields",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/members",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Incomplete Member\"\n}" },
+            "description": "Expect 400 with a field-by-field error list — rejected by express-validator before Mongoose or MongoDB are touched."
+          }
+        },
+        {
+          "name": "Rejected — Invalid Email Format",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/members",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": \"M999\",\n  \"name\": \"Bad Email\",\n  \"email\": \"not-an-email\",\n  \"phone\": \"9876543210\",\n  \"membershipPlan\": \"Premium\"\n}"
+            },
+            "description": "Expect 400 — email fails isEmail() validation."
+          }
+        },
+        {
+          "name": "Rejected — Invalid Mongo ObjectId in URL",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/members/not-a-valid-id",
+            "description": "Expect 400 with a clean message instead of a raw Mongoose CastError."
+          }
+        },
+        {
+          "name": "Sanitized — NoSQL Injection Attempt",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/members",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": \"M998\",\n  \"name\": \"Injector\",\n  \"email\": { \"$gt\": \"\" },\n  \"phone\": \"9876543210\",\n  \"membershipPlan\": \"Premium\"\n}"
+            },
+            "description": "express-mongo-sanitize strips the $gt operator key before it reaches Mongoose; check the server console for the '[security] Sanitized...' log line."
+          }
+        },
+        {
+          "name": "Rate Limit Headers",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/health",
+            "description": "Inspect the RateLimit-Limit / RateLimit-Remaining response headers. Send this ~100+ times quickly (or lower RATE_LIMIT_MAX in .env) to see a 429."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Members",
+      "item": [
+        { "name": "Get All Members", "request": { "method": "GET", "url": "{{baseUrl}}/api/members" } },
+        { "name": "Get Member By Id", "request": { "method": "GET", "url": "{{baseUrl}}/api/members/{{memberId}}" } },
+        {
+          "name": "Create Member",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/members",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": \"M001\",\n  \"name\": \"Rahul Sharma\",\n  \"email\": \"rahul@example.com\",\n  \"phone\": \"9876543210\",\n  \"membershipPlan\": \"Premium\",\n  \"joinDate\": \"2026-08-26\",\n  \"status\": \"active\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Member",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/members/{{memberId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"suspended\"\n}"
+            }
+          }
+        },
+        { "name": "Delete Member", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/members/{{memberId}}" } }
+      ]
+    },
+    {
+      "name": "Memberships",
+      "item": [
+        { "name": "Get All Memberships", "request": { "method": "GET", "url": "{{baseUrl}}/api/memberships" } },
+        { "name": "Get Membership By Id", "request": { "method": "GET", "url": "{{baseUrl}}/api/memberships/{{membershipId}}" } },
+        {
+          "name": "Create Membership",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/memberships",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"PLAN-ELITE\",\n  \"planName\": \"Elite\",\n  \"duration\": \"1 month\",\n  \"price\": 4999,\n  \"description\": \"Unlimited classes + 4 PT sessions/month\",\n  \"status\": \"active\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Membership",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/memberships/{{membershipId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"price\": 5499\n}" }
+          }
+        },
+        { "name": "Delete Membership", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/memberships/{{membershipId}}" } }
+      ]
+    },
+    {
+      "name": "Trainers",
+      "item": [
+        { "name": "Get All Trainers", "request": { "method": "GET", "url": "{{baseUrl}}/api/trainers" } },
+        { "name": "Get Trainer By Id", "request": { "method": "GET", "url": "{{baseUrl}}/api/trainers/{{trainerId}}" } },
+        {
+          "name": "Create Trainer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/trainers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trainerId\": \"T001\",\n  \"name\": \"Dev Patel\",\n  \"email\": \"dev.patel@irongrid.gym\",\n  \"phone\": \"9820011111\",\n  \"specialization\": \"Strength & Conditioning\",\n  \"experience\": 7,\n  \"status\": \"active\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Trainer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/trainers/{{trainerId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"experience\": 8\n}" }
+          }
+        },
+        { "name": "Delete Trainer", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/trainers/{{trainerId}}" } }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        { "name": "Get All Attendance", "request": { "method": "GET", "url": "{{baseUrl}}/api/attendance" } },
+        { "name": "Get Attendance By Id", "request": { "method": "GET", "url": "{{baseUrl}}/api/attendance/{{attendanceId}}" } },
+        {
+          "name": "Create Attendance",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/attendance",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": \"M001\",\n  \"date\": \"2026-08-26\",\n  \"checkIn\": \"06:15\",\n  \"status\": \"checked_in\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Attendance",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/attendance/{{attendanceId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"checkOut\": \"07:30\",\n  \"status\": \"checked_out\"\n}" }
+          }
+        },
+        { "name": "Delete Attendance", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/attendance/{{attendanceId}}" } }
+      ]
+    }
+  ]
+}

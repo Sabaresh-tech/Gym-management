@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+  background-color: #0d0d0d;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.section-offset {
+  scroll-margin-top: 76px;
+}
+
+.text-outline {
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+* {
+  font-family: "Inter", sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #ffffff1f;
+  border-radius: 999px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+:focus-visible {
+  outline: 2px solid #d7ff3b;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-toast-in {
+  animation: toast-in 0.2s ease-out;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-modal-in {
+  animation: modal-in 0.15s ease-out;
+}
