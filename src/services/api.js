@@ -4,7 +4,7 @@
 // Configure the backend URL via a Vite env var (defaults to localhost:5000
 // for local development, matching backend/.env.example's PORT).
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+export const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const TOKEN_KEY = "token";
 
 // --- Token helpers ---------------------------------------------------------
@@ -68,6 +68,7 @@ export const authApi = {
 export const membersApi = {
   list: () => request("/members"),
   get: (id) => request(`/members/${id}`),
+  me: () => request("/members/me"),
   create: (data) => request("/members", { method: "POST", body: JSON.stringify(data) }),
   update: (id, data) => request(`/members/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   remove: (id) => request(`/members/${id}`, { method: "DELETE" }),
@@ -86,6 +87,7 @@ export const membershipsApi = {
 export const trainersApi = {
   list: () => request("/trainers"),
   get: (id) => request(`/trainers/${id}`),
+  me: () => request("/trainers/me"),
   create: (data) => request("/trainers", { method: "POST", body: JSON.stringify(data) }),
   update: (id, data) => request(`/trainers/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   remove: (id) => request(`/trainers/${id}`, { method: "DELETE" }),

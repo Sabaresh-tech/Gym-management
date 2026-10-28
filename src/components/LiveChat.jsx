@@ -2,10 +2,18 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import io from "socket.io-client";
 import { useAuth } from "../context/AuthContext";
 import { MessageSquare, X, Send, AlertCircle, RefreshCw } from "lucide-react";
-import { BASE_URL, getToken } from "../services/api";
+
+// Helper to reliably read stored JWT
+function getAuthToken() {
+  try {
+    return localStorage.getItem("token");
+  } catch {
+    return null;
+  }
+}
 
 // Normalize backend origin and API endpoints regardless of trailing slashes or /api
-const rawBase = (BASE_URL || "http://localhost:5000/api").trim();
+const rawBase = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").trim();
 const SOCKET_SERVER_URL = rawBase.replace(/\/api\/?$/, "").replace(/\/+$/, "");
 const API_BASE_URL = `${SOCKET_SERVER_URL}/api`;
 
@@ -24,7 +32,7 @@ const LiveChat = () => {
   const roomRef = useRef(room);
 
   const { user } = useAuth();
-  const token = getToken();
+  const token = getAuthToken();
 
   // Keep roomRef updated for socket callbacks
   useEffect(() => {
@@ -34,7 +42,7 @@ const LiveChat = () => {
   // Fetch message history for the active room
   const fetchHistory = useCallback(
     async (targetRoom = room) => {
-      const currentToken = getToken();
+      const currentToken = getAuthToken();
       if (!currentToken) {
         console.warn("[Chat] Cannot fetch history: missing authentication token");
         return;
@@ -94,7 +102,7 @@ const LiveChat = () => {
 
   // Manage WebSocket connection lifecycle
   useEffect(() => {
-    const currentToken = getToken();
+    const currentToken = getAuthToken();
     if (!user || !currentToken) {
       setMessages([]);
       setSocketStatus("disconnected");

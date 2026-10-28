@@ -57,6 +57,14 @@ const io = new Server(server, {
   allowEIO3: true,
 });
 
+// Resilient fallback for WebSocket upgrade requests routed with /api/socket.io prefix
+server.on("upgrade", (req, socket, head) => {
+  if (req.url.startsWith("/api/socket.io")) {
+    req.url = req.url.replace(/^\/api\/socket\.io/, "/socket.io") || "/";
+    io.engine.handleUpgrade(req, socket, head);
+  }
+});
+
 const ChatMessage = require("./models/ChatMessage");
 const jwt = require("jsonwebtoken");
 const User = require("./models/User");
@@ -235,6 +243,12 @@ app.use(preventParamPollution);
 // about unrelated traffic.
 app.use("/api", apiRateLimiter);
 
+// Resilient fallback for Socket.IO polling requests with /api/socket.io prefix
+app.use("/api/socket.io", (req, res) => {
+  req.url = req.url.replace(/^\/api\/socket\.io/, "/socket.io") || "/";
+  io.engine.handleRequest(req, res);
+});
+
 // --- Health check ------------------------------------------------------
 // GET /api/health — quick way to confirm the API is up during a demo.
 app.get("/api/health", (req, res) => {
@@ -248,6 +262,8 @@ app.use("/api/trainers", trainerRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/chat", chatRoutes);
+// Resilient alias in case a client double-prefixes /api/api/chat
+app.use("/api/api/chat", chatRoutes);
 
 // --- 404 + centralized error handling -----------------------------------
 app.use(notFound);
